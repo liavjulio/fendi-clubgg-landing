@@ -5,6 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://fendi-clubgg-landing.vercel.app'),
   title: 'Fendi ClubGG - מועדון הפוקר המוביל בישראל',
   description: 'שחק פוקר אונליין על כסף אמיתי באפליקציית ClubGG. מועדון הפוקר המוביל בישראל עם יותר מ-200 שחקנים פעילים יומיים, בונוסים מטורפים וסוכנים זמינים 24/7.',
   keywords: 'פוקר, פוקר אונליין, ClubGG, טקסס הולדם, אומהה, פוקר ישראל, כסף אמיתי, טורנירים',
@@ -12,6 +13,16 @@ export const metadata: Metadata = {
   creator: 'Fendi ClubGG',
   publisher: 'Fendi ClubGG',
   robots: 'index, follow',
+  icons: {
+    icon: [
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/images/fendi/Fendi_Club_Logo.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/images/fendi/Fendi_Club_Logo.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'he_IL',
