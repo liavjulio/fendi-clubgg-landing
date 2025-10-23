@@ -1,0 +1,231 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import SafeImage from './SafeImage';
+import SafeVideo from './SafeVideo';
+
+interface MediaItem {
+  type: 'image' | 'video';
+  src: string;
+  alt?: string;
+  title?: string;
+}
+
+interface MediaCarouselProps {
+  items: MediaItem[];
+  autoPlay?: boolean;
+  autoPlayInterval?: number;
+}
+
+const MediaCarousel = ({ items, autoPlay = true, autoPlayInterval = 3000 }: MediaCarouselProps) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const nextSlide = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
+      setIsTransitioning(false);
+    }, 150);
+  };
+
+  const prevSlide = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex((prevIndex) => (prevIndex - 1 + items.length) % items.length);
+      setIsTransitioning(false);
+    }, 150);
+  };
+
+  const goToSlide = (index: number) => {
+    if (index !== currentIndex) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex(index);
+        setIsTransitioning(false);
+      }, 150);
+    }
+  };
+
+  // Preload images
+  useEffect(() => {
+    const preloadImages = () => {
+      const imagesToPreload = [];
+      
+      // Preload current image and next/previous ones
+      for (let i = -2; i <= 2; i++) {
+        const index = (currentIndex + i + items.length) % items.length;
+        const item = items[index];
+        if (item && item.type === 'image') {
+          imagesToPreload.push(index);
+        }
+      }
+
+      imagesToPreload.forEach((index) => {
+        if (!loadedImages.has(index)) {
+          const img = new Image();
+          img.onload = () => {
+            setLoadedImages(prev => new Set(prev).add(index));
+          };
+          img.src = items[index].src;
+        }
+      });
+    };
+
+    preloadImages();
+  }, [currentIndex, items, loadedImages]);
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (isPlaying && !isVideoPlaying && items.length > 1) {
+      const interval = setInterval(nextSlide, autoPlayInterval);
+      return () => clearInterval(interval);
+    }
+  }, [isPlaying, isVideoPlaying, autoPlayInterval, items.length, nextSlide]);
+
+  const handleVideoPlay = () => {
+    setIsVideoPlaying(true);
+    setIsPlaying(false);
+  };
+
+  const handleVideoPause = () => {
+    setIsVideoPlaying(false);
+    if (autoPlay) setIsPlaying(true);
+  };
+
+  if (items.length === 0) {
+    return (
+      <div className="bg-gradient-to-br from-gray-700 to-gray-800 rounded-xl h-96 md:h-[32rem] lg:h-[40rem] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-24 h-24 gold-gradient rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl text-black">🎬</span>
+          </div>
+          <p className="text-gray-300 font-bold text-lg">הוסף תמונות וסרטונים</p>
+          <p className="text-gray-400 text-sm mt-2">העלה את הקבצים שלך לתיקיית public/images</p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentItem = items[currentIndex];
+
+  return (
+    <div className="relative w-full max-w-7xl mx-auto">
+      {/* Main Media Display */}
+      <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl p-6 border border-yellow-500/20 overflow-hidden">
+        <div className="relative rounded-xl overflow-hidden h-[32rem] md:h-[48rem] lg:h-[56rem] xl:h-[64rem] bg-black p-4">
+          <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'} h-full`}>
+            {currentItem.type === 'image' ? (
+              <SafeImage
+                src={currentItem.src}
+                alt={currentItem.alt || 'תמונה'}
+                className="w-full h-full object-contain transition-transform duration-500"
+                fallbackContent={
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-black font-bold text-xl">📷</span>
+                      </div>
+                      <p className="text-gray-300 font-medium">תמונה לא נמצאה</p>
+                      <p className="text-gray-400 text-sm">{currentItem.src}</p>
+                    </div>
+                  </div>
+                }
+              />
+          ) : (
+            <SafeVideo
+              src={currentItem.src}
+              className="w-full h-full object-contain"
+              controls
+              onPlay={handleVideoPlay}
+              onPause={handleVideoPause}
+              fallbackContent={
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-black font-bold text-xl">🎬</span>
+                    </div>
+                    <p className="text-gray-300 font-medium">סרטון לא נמצא</p>
+                    <p className="text-gray-400 text-sm">{currentItem.src}</p>
+                  </div>
+                </div>
+              }
+            />
+          )}
+          </div>
+
+          {/* Navigation Arrows */}
+          {items.length > 1 && (
+            <>
+              <button
+                onClick={nextSlide}
+                disabled={isTransitioning}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-gradient-to-r from-black/60 to-black/40 hover:from-black/80 hover:to-black/60 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="תמונה הבאה"
+              >
+                <span className="text-2xl">◀</span>
+              </button>
+              <button
+                onClick={prevSlide}
+                disabled={isTransitioning}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-gradient-to-r from-black/60 to-black/40 hover:from-black/80 hover:to-black/60 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="תמונה קודמת"
+              >
+                <span className="text-2xl">▶</span>
+              </button>
+            </>
+          )}
+
+          {/* Play/Pause Button
+          {items.length > 1 && (
+            <button
+              onClick={toggleAutoPlay}
+              className="absolute top-4 left-4 w-10 h-10 bg-gradient-to-r from-yellow-500/80 to-yellow-600/80 hover:from-yellow-400/90 hover:to-yellow-500/90 text-black rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm border border-yellow-400/30"
+              aria-label={isPlaying ? 'השהה' : 'הפעל'}
+            >
+              <span className="text-lg">{isPlaying ? '⏸️' : '▶️'}</span>
+            </button>
+          )} */}
+
+          {/* Media Type Badge
+          <div className="absolute top-4 right-4 px-3 py-1 bg-black/50 text-white text-sm rounded-full">
+            {currentItem.type === 'video' ? '🎬 סרטון' : '📷 תמונה'}
+          </div> */}
+        </div>
+
+
+      </div>
+
+
+      {/* Progress Indicator */}
+      {items.length > 1 && (
+        <div className="flex justify-center mt-4">
+          <div className="flex space-x-1 rtl:space-x-reverse">
+            {items.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 transform hover:scale-125 ${
+                  index === currentIndex 
+                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/30 scale-110' 
+                    : 'bg-gray-600 hover:bg-gray-500'
+                }`}
+                aria-label={`עבור לתמונה ${index + 1}`}
+              ></button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Counter */}
+      <div className="text-center mt-2 text-gray-400 text-sm">
+        {currentIndex + 1} מתוך {items.length}
+      </div>
+    </div>
+  );
+};
+
+export default MediaCarousel;
