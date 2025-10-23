@@ -59,7 +59,7 @@ const About = () => {
 
         {/* Stats Section */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 mb-24">
-          {stats.map((stat, index) => (
+          {stats.map((stat) => (
             <div key={stat.label} className="text-center p-10 bg-gradient-to-b from-gray-800/80 to-gray-900/60 backdrop-blur-sm rounded-2xl border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 hover:scale-105 shadow-2xl">
               <div className="flex justify-center mb-6">
                 <div className="w-28 h-28 lg:w-32 lg:h-32 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-4xl lg:text-5xl shadow-lg shadow-yellow-500/30">

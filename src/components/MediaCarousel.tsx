@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import SafeImage from './SafeImage';
 import SafeVideo from './SafeVideo';
 
@@ -24,13 +24,13 @@ const MediaCarousel = ({ items, autoPlay = true, autoPlayInterval = 3000 }: Medi
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
       setIsTransitioning(false);
     }, 150);
-  };
+  }, [items.length]);
 
   const prevSlide = () => {
     setIsTransitioning(true);

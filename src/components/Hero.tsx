@@ -66,7 +66,7 @@ const Hero = () => {
 
           {/* Subtitle */}
           <p className="text-3xl md:text-4xl lg:text-5xl text-gray-300 mb-16 max-w-7xl mx-auto animate-slide-up leading-relaxed font-medium">
-            <span className="text-yellow-400 font-bold">5000+</span> שחקנים פעילים יומיים במועדון הרשמי של ClubGG בישראל "Fendi ClubGG"
+            <span className="text-yellow-400 font-bold">5000+</span> שחקנים פעילים יומיים במועדון הרשמי של ClubGG בישראל &quot;Fendi ClubGG&quot;
             <br />
             <span className="text-2xl md:text-3xl lg:text-4xl">
             הצטרף היום דרך סוכן רשמי שיעזור לך עם הפקדות, משיכות, פתיחת משתמש והצטרפות למועדון.
